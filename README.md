@@ -2,101 +2,424 @@
 
 A serverless widget to showcase Kugou user's now playing track.
 
-## Features
+> ⚠️ **Important**: This project uses unofficial Kugou APIs for educational purposes only. The API may break with Kugou updates. For production use, consider using Spotify or Last.fm instead.
 
-- 🎵 Display currently playing track
-- 🎨 Customizable SVG widget
-- ⚡ Serverless deployment with Vercel
-- 🔄 Real-time updates
+## 🚀 Quick Start (Works Immediately!)
 
-## Project Structure
-
-```
-kugou-widget/
-├── api/
-│   ├── index.py           # Main API endpoint handler
-│   ├── kugou_client.py    # Kugou API client
-│   ├── svg_generator.py   # SVG widget generator
-│   └── requirements.txt   # Python dependencies
-├── vercel.json            # Vercel configuration
-├── .env.example           # Environment variables example
-└── README.md              # This file
-```
-
-## Usage
-
-### Display Widget
-
-Add this to your GitHub README or any webpage:
+**Want to see it working now?** Use demo mode:
 
 ```markdown
-![Kugou Now Playing](https://your-deployment.vercel.app?user_id=YOUR_USER_ID)
+![Kugou Demo](https://your-deployment.vercel.app?user_id=demo&theme=dark)
+```
+
+This shows rotating demo songs and works without any setup.
+
+## Features
+
+- 🎵 **Three modes**: Demo data, Manual updates, or Full API integration
+- 🎨 **Customizable SVG** with light/dark themes  
+- ⚡ **Serverless deployment** with Vercel
+- 🔄 **Firebase integration** for credential storage
+- 🛡️ **Secure token management**
+- 📱 **Mobile-friendly** responsive design
+- ⚠️ **Realistic expectations** - shows "recently played" not true "now playing"
+
+## Reality Check: Limitations
+
+### ❌ What Doesn't Work
+- **True "Now Playing"**: Kugou doesn't expose real-time currently playing
+- **Official API**: Uses reverse-engineered unofficial endpoints  
+- **Automatic Updates**: No push notifications when songs change
+- **Easy Setup**: Requires significant reverse engineering for full functionality
+
+### ✅ What Actually Works
+- **Demo Mode**: Works immediately with sample data
+- **Manual Updates**: Update songs via API call
+- **Custom Themes**: Light/dark themes with customization
+- **Recent History**: Shows last played track (if you extract credentials)
+
+## Quick Demo
+
+![Demo Widget](https://your-deployment.vercel.app/test?theme=dark)
+
+## Three Ways to Use This
+
+### 1. 🎬 Demo Mode (Works Now!)
+Perfect for testing or showcasing the widget:
+
+```markdown
+![Kugou Widget](https://your-deployment.vercel.app?user_id=demo&theme=dark)
+```
+
+**Pros:** Works immediately, no setup  
+**Cons:** Shows demo data, not your actual music
+
+### 2. 🔄 Manual Update Mode (Semi-Automated) 
+Update your current song via API call:
+
+```bash
+curl -X POST https://your-deployment.vercel.app/update \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "your_id", 
+    "song_name": "青花瓷",
+    "artist_name": "周杰伦",
+    "cover_url": "https://image.url"
+  }'
+```
+
+Then use: `![Music](https://your-deployment.vercel.app?user_id=your_id)`
+
+**Pros:** Shows your actual music, works reliably  
+**Cons:** Manual updates required
+
+### 3. 🔧 Full API Mode (Advanced/Experimental)
+Extract credentials from Kugou app for automatic fetching:
+
+**Pros:** Attempts to fetch real listening history  
+**Cons:** Requires reverse engineering, may break anytime
+
+## Step-by-Step Deployment
+
+### Option A: Deploy Demo Version (5 minutes)
+
+1. **Fork this repository** on GitHub
+
+2. **Deploy to Vercel:**
+   ```bash
+   npm i -g vercel
+   vercel login
+   vercel --prod
+   ```
+
+3. **Test immediately:**
+   ```
+   https://your-deployment.vercel.app?user_id=demo
+   ```
+
+4. **Add to GitHub README:**
+   ```markdown
+   ![Kugou Music](https://your-deployment.vercel.app?user_id=demo&theme=dark)
+   ```
+
+**Done!** You now have a working widget with demo data.
+
+### Option B: Add Manual Updates (10 minutes)
+
+1. **Complete Option A first**
+
+2. **Set up Firebase (optional, for persistence):**
+   - Create [Firebase project](https://console.firebase.google.com)
+   - Enable Realtime Database  
+   - Generate service account key
+   - Add to Vercel environment variables:
+     - `FIREBASE_CREDENTIALS`: Paste entire JSON
+     - `FIREBASE_DATABASE_URL`: Your database URL
+
+3. **Update songs manually:**
+   ```bash
+   curl -X POST https://your-deployment.vercel.app/update \
+     -H "Content-Type: application/json" \
+     -d '{
+       "user_id": "my_music",
+       "song_name": "Current Song", 
+       "artist_name": "Current Artist",
+       "cover_url": "https://album-art-url.jpg"
+     }'
+   ```
+
+4. **Update README to use your ID:**
+   ```markdown
+   ![My Music](https://your-deployment.vercel.app?user_id=my_music&theme=dark)
+   ```
+
+**Result:** Widget shows your manually updated current song.
+
+### Option C: Full API Integration (2-4 hours)
+
+⚠️ **Advanced users only** - requires reverse engineering
+
+1. **Extract Kugou credentials:**
+   - Install Kugou mobile app
+   - Use network analysis tools (Burp Suite, mitmproxy)
+   - Extract: `userid`, `token`, `dfid`, `mid`, `uuid`
+   - Or use existing tools like [KuGouMusicApi](https://github.com/MakcRe/KuGouMusicApi)
+
+2. **Store in Firebase:**
+   ```json
+   {
+     "users": {
+       "your_user_id": {
+         "userid": "extracted_userid",
+         "token": "extracted_token", 
+         "dfid": "device_fingerprint",
+         "mid": "machine_id",
+         "uuid": "unique_id",
+         "expires_at": 1699999999999
+       }
+     }
+   }
+   ```
+
+3. **Widget will attempt to fetch from Kugou API**
+
+**Warning:** This may stop working anytime Kugou updates their app.
+
+## Usage Examples
+
+### Basic Widget
+```
+https://your-deployment.vercel.app?user_id=demo
+```
+
+### Customized Widget  
+```
+https://your-deployment.vercel.app?user_id=demo&theme=dark&width=500&height=150&show_album=false
 ```
 
 ### Query Parameters
 
-- `user_id` (required): Your Kugou user ID
-- `width` (optional): Widget width in pixels (default: 400)
-- `height` (optional): Widget height in pixels (default: 120)
-
-### Example
-
-```markdown
-![Kugou Now Playing](https://your-deployment.vercel.app?user_id=123456&width=500&height=150)
-```
-
-## Deployment
-
-### Deploy to Vercel
-
-1. Fork this repository
-2. Import it to [Vercel](https://vercel.com)
-3. Deploy!
-
-### Local Development
-
-1. Clone the repository:
-```bash
-git clone https://github.com/ThamJiaHe/kugou-widget.git
-cd kugou-widget
-```
-
-2. Install dependencies:
-```bash
-pip install -r api/requirements.txt
-```
-
-3. Set up environment variables (optional):
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-4. Test locally with Vercel CLI:
-```bash
-npm i -g vercel
-vercel dev
-```
-
-## Configuration
-
-See `.env.example` for available configuration options.
+| Parameter | Description | Default | Options |
+|-----------|-------------|---------|---------|
+| `user_id` | Your user ID (required) | - | String |
+| `theme` | Color theme | `light` | `light`, `dark` |
+| `width` | Widget width | `400` | Number (px) |
+| `height` | Widget height | `120` | Number (px) |  
+| `show_album` | Show album art | `true` | `true`, `false` |
 
 ## API Endpoints
 
-### GET /
+### Main Endpoints
 
-Main endpoint that returns an SVG widget.
+- `GET /` - Main SVG widget endpoint
+- `GET /health` - Service health check  
+- `GET /test` - Test widget with sample data
+- `GET /login` - Setup instructions and options
+- `POST /update` - Manually update current song (requires Firebase)
 
-**Query Parameters:**
-- `user_id`: Kugou user ID (required)
-- `width`: Widget width (optional, default: 400)
-- `height`: Widget height (optional, default: 120)
+### Endpoint Details
 
-**Response:**
-- Content-Type: `image/svg+xml`
-- Cache-Control: `public, max-age=60`
+**Main Widget: `GET /`**
+```
+GET /?user_id=demo&theme=dark&width=400&height=120&show_album=true
+```
+
+**Manual Update: `POST /update`**
+```bash
+curl -X POST /update \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "your_id",
+    "song_name": "Song Name",
+    "artist_name": "Artist Name", 
+    "cover_url": "https://cover.jpg"
+  }'
+```
+
+**Health Check: `GET /health`**
+```json
+{
+  "status": "healthy",
+  "firebase_connected": true,
+  "version": "1.0.0"
+}
+```
+
+## Local Development & Testing
+
+### Test Locally
+
+1. **Clone and install:**
+```bash
+git clone https://github.com/YOUR_USERNAME/kugou-widget.git
+cd kugou-widget
+pip install -r api/requirements.txt
+```
+
+2. **Run locally:**
+```bash
+cd api && python index.py
+# Or use Vercel CLI: vercel dev
+```
+
+3. **Test endpoints:**
+```bash
+# Test widget
+curl http://localhost:5000/test
+
+# Health check  
+curl http://localhost:5000/health
+
+# Demo widget
+curl "http://localhost:5000?user_id=demo&theme=dark"
+```
+
+### Deploy and Test
+
+1. **Deploy:**
+```bash
+vercel --prod
+```
+
+2. **Test deployment:**
+```bash
+# Health check
+curl https://your-deployment.vercel.app/health
+
+# Demo widget
+curl "https://your-deployment.vercel.app?user_id=demo"
+```
+
+3. **Add to GitHub README:**
+```markdown
+![Kugou Music](https://your-deployment.vercel.app?user_id=demo&theme=dark)
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**"Service temporarily unavailable"**
+- Check Vercel function logs: `vercel logs`
+- Verify deployment: `curl /health`
+- Try demo mode first: `?user_id=demo`
+
+**"Error loading widget"**  
+- Firebase credentials missing/invalid
+- Network connectivity issues
+- Try test endpoint: `/test`
+
+**"No song data"**
+- For demo mode: Should always work
+- For manual mode: Call `/update` first  
+- For API mode: Check Firebase data structure
+
+### Debugging Steps
+
+1. **Test deployment health:**
+   ```bash
+   curl https://your-deployment.vercel.app/health
+   ```
+
+2. **Test with demo data:**
+   ```bash
+   curl "https://your-deployment.vercel.app?user_id=demo"
+   ```
+
+3. **Check Vercel logs:**
+   ```bash
+   vercel logs
+   ```
+
+4. **Verify Firebase connection:**
+   ```bash
+   curl https://your-deployment.vercel.app/login
+   ```
+
+## Limitations & Challenges
+
+### Technical Limitations
+
+❌ **No Real-Time "Now Playing"**: Kugou doesn't expose this endpoint. Widget shows most recent track from listening history.
+
+❌ **Unofficial API**: Can break anytime Kugou updates their app.
+
+❌ **Complex Authentication**: Requires AES-256 encryption, RSA keys, MD5 signing.
+
+❌ **Manual Token Management**: No automated refresh like Spotify OAuth.
+
+❌ **Rate Limiting**: API may have undocumented rate limits.
+
+### Legal Considerations
+
+⚖️ **Terms of Service**: Using unofficial APIs may violate Kugou's ToS.
+
+⚖️ **Educational Use Only**: This project is for learning purposes.
+
+⚖️ **No Commercial Use**: Don't use this commercially.
+
+## Troubleshooting
+
+### Common Issues
+
+**"Missing user_id parameter"**
+- Add `?user_id=YOUR_ID` to the URL
+
+**"Service temporarily unavailable"** 
+- Check Firebase credentials
+- Verify Kugou tokens are valid
+- Check Vercel function logs
+
+**"Error loading widget"**
+- Tokens may be expired
+- API endpoints may have changed
+- Network connectivity issues
+
+### Debugging
+
+1. Check Vercel function logs
+2. Test `/health` endpoint  
+3. Verify Firebase database structure
+4. Test with `/test` endpoint first
+
+## Comparison: Kugou vs Spotify
+
+| Aspect | Spotify | Kugou |
+|--------|---------|-------|
+| **Setup Time** | 5 minutes | 2-4 hours |
+| **API Type** | Official OAuth2 | Unofficial + encryption |
+| **Real-time** | ✅ True "now playing" | ❌ Recent history only |
+| **Stability** | ✅ Highly stable | ❌ May break anytime |
+| **Maintenance** | ✅ Zero maintenance | ❌ High maintenance |
+| **Legal** | ✅ Commercial friendly | ❌ Educational only |
+
+## Recommended Alternatives
+
+### 1. Spotify (Recommended)
+- Use [spotify-github-profile](https://github.com/kittinan/spotify-github-profile)
+- Official API, 5-minute setup
+- Real-time updates
+
+### 2. Last.fm Integration
+- Set up Last.fm scrobbling from Kugou
+- Use Last.fm's official API
+- More stable than direct Kugou integration
+
+### 3. Manual Updates
+- Create static SVG
+- Update manually when songs change
+- No API complexity
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+**Areas for contribution:**
+- Improved authentication flow
+- Better error handling
+- Additional themes
+- API stability improvements
+
+## Security Notes
+
+🔒 **Never commit real credentials** to version control
+
+🔒 **Use environment variables** for all secrets
+
+🔒 **Rotate tokens regularly** if possible
+
+🔒 **Monitor for API changes** that might break authentication
 
 ## License
 
-MIT
+MIT License - see LICENSE file for details.
+
+**Disclaimer**: This project is not affiliated with Kugou Music. Use at your own risk and in accordance with Kugou's Terms of Service.
+
+---
+
+*For a simpler, more reliable solution, consider using [Spotify widgets](https://github.com/kittinan/spotify-github-profile) instead.*
