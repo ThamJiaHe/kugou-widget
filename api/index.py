@@ -3,18 +3,42 @@ Main API endpoint for Kugou widget
 Flask serverless function for Vercel
 """
 from flask import Flask, Response, request, jsonify
-import firebase_admin
-from firebase_admin import credentials, db
 import os
 import json
 import traceback
 import time
 import hashlib
+import sys
 
-from kugou_client import KugouClient
-from svg_generator import generate_music_svg, generate_default_svg, generate_error_svg
+# Add the current directory to path for local imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 
+# Import Firebase conditionally to prevent crashes
+firebase_initialized = False
+firebase_admin = None
+try:
+    import firebase_admin
+    from firebase_admin import credentials, db
+except ImportError as e:
+    print(f"Firebase Admin SDK not available: {e}")
+
+# Import local modules
+print("Loading Kugou client and SVG generator...")
+try:
+    from kugou_client import KugouClient
+    from svg_generator import generate_music_svg, generate_default_svg, generate_error_svg
+    print("Successfully imported local modules")
+except Exception as e:
+    print(f"ERROR importing local modules: {e}")
+    print(f"Current directory: {os.path.dirname(os.path.abspath(__file__))}")
+    print(f"sys.path: {sys.path}")
+    raise
+
+print("Creating Flask app...")
 app = Flask(__name__)
+print(f"Flask app created successfully")
 
 # Demo song data for immediate testing
 DEMO_SONGS = [
@@ -38,10 +62,9 @@ DEMO_SONGS = [
 # Current song index (cycles through demo songs)
 current_song_index = 0
 
-# Initialize Firebase (only if credentials are available)
-firebase_initialized = False
-try:
-    if os.getenv("FIREBASE_CREDENTIALS"):
+# Initialize Firebase (only if credentials are available and firebase_admin is imported)
+if firebase_admin and os.getenv("FIREBASE_CREDENTIALS"):
+    try:
         firebase_creds = json.loads(os.getenv("FIREBASE_CREDENTIALS"))
         cred = credentials.Certificate(firebase_creds)
         firebase_admin.initialize_app(cred, {
@@ -49,9 +72,11 @@ try:
         })
         firebase_initialized = True
         print("Firebase initialized successfully")
-except Exception as e:
-    print(f"Firebase initialization failed: {e}")
-    firebase_initialized = False
+    except Exception as e:
+        print(f"Firebase initialization failed: {e}")
+        firebase_initialized = False
+else:
+    print("Firebase not available or credentials not set - using demo mode only")
 
 
 @app.route('/')

@@ -68,9 +68,10 @@ class KugouClient:
         sign_string = param_string + secret_key
         
         # Generate MD5 signature
-        return hashlib.md5(sign_string.encode()).hexdigest().upper()\n    
+        return hashlib.md5(sign_string.encode()).hexdigest().upper()
+    
     def _get_common_params(self) -> dict:
-        """Get common parameters needed for most API calls\"\"\"
+        """Get common parameters needed for most API calls"""
         return {
             'clienttime': int(time.time() * 1000),
             'mid': self.mid,
@@ -177,7 +178,8 @@ class KugouClient:
             
             return None
             
-        except Exception as e:\n            print(f"Error searching songs: {e}")
+        except Exception as e:
+            print(f"Error searching songs: {e}")
             return None
     
     def get_now_playing_fallback(self, user_id: str = None) -> Optional[Dict[str, Any]]:
