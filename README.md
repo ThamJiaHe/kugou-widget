@@ -9,7 +9,7 @@ A serverless widget to showcase Kugou user's now playing track.
 **Want to see it working now?** Use demo mode:
 
 ```markdown
-![Kugou Demo](https://your-deployment.vercel.app?user_id=demo&theme=dark)
+![Kugou Demo](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo&theme=dark)
 ```
 
 This shows rotating demo songs and works without any setup.
@@ -40,7 +40,7 @@ This shows rotating demo songs and works without any setup.
 
 ## Quick Demo
 
-![Demo Widget](https://your-deployment.vercel.app/test?theme=dark)
+![Demo Widget](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app/test?theme=dark)
 
 ## Three Ways to Use This
 
@@ -48,7 +48,7 @@ This shows rotating demo songs and works without any setup.
 Perfect for testing or showcasing the widget:
 
 ```markdown
-![Kugou Widget](https://your-deployment.vercel.app?user_id=demo&theme=dark)
+![Kugou Widget](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo&theme=dark)
 ```
 
 **Pros:** Works immediately, no setup  
@@ -58,7 +58,7 @@ Perfect for testing or showcasing the widget:
 Update your current song via API call:
 
 ```bash
-curl -X POST https://your-deployment.vercel.app/update \
+curl -X POST https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app/update \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "your_id", 
@@ -68,7 +68,7 @@ curl -X POST https://your-deployment.vercel.app/update \
   }'
 ```
 
-Then use: `![Music](https://your-deployment.vercel.app?user_id=your_id)`
+Then use: `![Music](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=your_id)`
 
 **Pros:** Shows your actual music, works reliably  
 **Cons:** Manual updates required
@@ -100,7 +100,7 @@ Extract credentials from Kugou app for automatic fetching:
 
 4. **Test immediately:**
    ```
-   https://your-deployment.vercel.app?user_id=demo
+   https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo
    ```
 
 **Done!** Automatic deployments on every push to main.
@@ -118,12 +118,12 @@ Extract credentials from Kugou app for automatic fetching:
 
 3. **Test immediately:**
    ```
-   https://your-deployment.vercel.app?user_id=demo
+   https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo
    ```
 
 4. **Add to GitHub README:**
    ```markdown
-   ![Kugou Music](https://your-deployment.vercel.app?user_id=demo&theme=dark)
+   ![Kugou Music](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo&theme=dark)
    ```
 
 **Done!** You now have a working widget with demo data.
@@ -142,7 +142,7 @@ Extract credentials from Kugou app for automatic fetching:
 
 3. **Update songs manually:**
    ```bash
-   curl -X POST https://your-deployment.vercel.app/update \
+   curl -X POST https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app/update \
      -H "Content-Type: application/json" \
      -d '{
        "user_id": "my_music",
@@ -154,7 +154,7 @@ Extract credentials from Kugou app for automatic fetching:
 
 4. **Update README to use your ID:**
    ```markdown
-   ![My Music](https://your-deployment.vercel.app?user_id=my_music&theme=dark)
+   ![My Music](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=my_music&theme=dark)
    ```
 
 **Result:** Widget shows your manually updated current song.
@@ -193,12 +193,12 @@ Extract credentials from Kugou app for automatic fetching:
 
 ### Basic Widget
 ```
-https://your-deployment.vercel.app?user_id=demo
+https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo
 ```
 
 ### Customized Widget  
 ```
-https://your-deployment.vercel.app?user_id=demo&theme=dark&width=500&height=150&show_album=false
+https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo&theme=dark&width=500&height=150&show_album=false
 ```
 
 ### Query Parameters
@@ -288,15 +288,15 @@ vercel --prod
 2. **Test deployment:**
 ```bash
 # Health check
-curl https://your-deployment.vercel.app/health
+curl https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app/health
 
 # Demo widget
-curl "https://your-deployment.vercel.app?user_id=demo"
+curl "https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo"
 ```
 
 3. **Add to GitHub README:**
 ```markdown
-![Kugou Music](https://your-deployment.vercel.app?user_id=demo&theme=dark)
+![Kugou Music](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo&theme=dark)
 ```
 
 ## Troubleshooting
@@ -322,12 +322,12 @@ curl "https://your-deployment.vercel.app?user_id=demo"
 
 1. **Test deployment health:**
    ```bash
-   curl https://your-deployment.vercel.app/health
+   curl https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app/health
    ```
 
 2. **Test with demo data:**
    ```bash
-   curl "https://your-deployment.vercel.app?user_id=demo"
+   curl "https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=demo"
    ```
 
 3. **Check Vercel logs:**
@@ -337,7 +337,7 @@ curl "https://your-deployment.vercel.app?user_id=demo"
 
 4. **Verify Firebase connection:**
    ```bash
-   curl https://your-deployment.vercel.app/login
+   curl https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app/login
    ```
 
 ## Limitations & Challenges
