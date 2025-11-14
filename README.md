@@ -81,7 +81,31 @@ Extract credentials from Kugou app for automatic fetching:
 
 ## Step-by-Step Deployment
 
-### Option A: Deploy Demo Version (5 minutes)
+### Option A: Automatic Deployment (Recommended)
+
+1. **Fork this repository** on GitHub
+
+2. **Set up GitHub Actions secrets** (see [DEPLOYMENT.md](DEPLOYMENT.md)):
+   - `VERCEL_TOKEN` - Your Vercel CLI token
+   - `VERCEL_ORG_ID` - Your Vercel organization ID  
+   - `VERCEL_PROJECT_ID` - Your Vercel project ID
+   - `VERCEL_PROJECT_DOMAIN` - Your project domain (optional)
+
+3. **Push to main branch** - automatic deployment via GitHub Actions:
+   ```bash
+   git add .
+   git commit -m "Deploy Kugou widget"
+   git push origin main
+   ```
+
+4. **Test immediately:**
+   ```
+   https://your-deployment.vercel.app?user_id=demo
+   ```
+
+**Done!** Automatic deployments on every push to main.
+
+### Option B: Manual Deployment (5 minutes)
 
 1. **Fork this repository** on GitHub
 
@@ -104,9 +128,9 @@ Extract credentials from Kugou app for automatic fetching:
 
 **Done!** You now have a working widget with demo data.
 
-### Option B: Add Manual Updates (10 minutes)
+### Option C: Add Manual Updates (10 minutes)
 
-1. **Complete Option A first**
+1. **Complete Option A or B first**
 
 2. **Set up Firebase (optional, for persistence):**
    - Create [Firebase project](https://console.firebase.google.com)
@@ -135,7 +159,7 @@ Extract credentials from Kugou app for automatic fetching:
 
 **Result:** Widget shows your manually updated current song.
 
-### Option C: Full API Integration (2-4 hours)
+### Option D: Full API Integration (2-4 hours)
 
 ⚠️ **Advanced users only** - requires reverse engineering
 
