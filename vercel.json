@@ -1,7 +1,7 @@
 {
   "functions": {
-    "api/*.py": {
-      "runtime": "@vercel/python@4.1.0"
+    "api/index.py": {
+      "runtime": "python@3.9"
     }
   },
   "rewrites": [
@@ -10,10 +10,6 @@
       "destination": "/api/index.py"
     }
   ],
-  "env": {
-    "FIREBASE_CREDENTIALS": "@firebase-credentials",
-    "FIREBASE_DATABASE_URL": "@firebase-database-url"
-  },
   "headers": [
     {
       "source": "/api/(.*)",
