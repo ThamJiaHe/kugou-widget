@@ -42,7 +42,7 @@ This shows rotating demo songs and works without any setup.
 
 ![Demo Widget](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app/test?theme=dark)
 
-## Three Ways to Use This
+## Four Ways to Use This
 
 ### 1. 🎬 Demo Mode (Works Now!)
 Perfect for testing or showcasing the widget:
@@ -54,7 +54,33 @@ Perfect for testing or showcasing the widget:
 **Pros:** Works immediately, no setup  
 **Cons:** Shows demo data, not your actual music
 
-### 2. 🔄 Manual Update Mode (Semi-Automated) 
+### 2. 🎵 KuGouMusicApi Integration (Recommended!)
+**NEW!** Use the [KuGouMusicApi Node.js service](https://github.com/zkhssb/KuGouMusicApi) for real-time listening history:
+
+```markdown
+![Kugou Music](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=YOUR_ID&theme=dark)
+```
+
+**Architecture:**
+```
+Your Kugou Account → KuGouMusicApi (Node.js) → This Widget → GitHub Profile
+```
+
+**Pros:** 
+- ✅ Real Kugou listening history
+- ✅ Reliable authentication handled by Node.js service
+- ✅ Automatic updates from your Kugou account
+- ✅ No complex Python authentication required
+
+**Setup:** See [KUGOU_API_INTEGRATION.md](KUGOU_API_INTEGRATION.md) for complete guide
+
+**Quick Setup:**
+1. Deploy [KuGouMusicApi](https://github.com/zkhssb/KuGouMusicApi) to Vercel
+2. Login to get your `userid` and `token`
+3. Save credentials: `POST /setup-kugou`
+4. Done! Widget shows real-time listening history
+
+### 3. 🔄 Manual Update Mode (Semi-Automated) 
 Update your current song via API call:
 
 ```bash
@@ -73,11 +99,13 @@ Then use: `![Music](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects
 **Pros:** Shows your actual music, works reliably  
 **Cons:** Manual updates required
 
-### 3. 🔧 Full API Mode (Advanced/Experimental)
-Extract credentials from Kugou app for automatic fetching:
+### 4. 🔧 Direct API Mode (Advanced/Not Recommended)
+Extract credentials directly from Kugou app:
 
-**Pros:** Attempts to fetch real listening history  
-**Cons:** Requires reverse engineering, may break anytime
+**Pros:** No intermediary service  
+**Cons:** Complex authentication, may break anytime
+
+**Recommendation:** Use KuGouMusicApi integration (#2) instead!
 
 ## Step-by-Step Deployment
 
@@ -128,7 +156,62 @@ Extract credentials from Kugou app for automatic fetching:
 
 **Done!** You now have a working widget with demo data.
 
-### Option C: Add Manual Updates (10 minutes)
+### Option C: KuGouMusicApi Integration (Real-Time Sync!)
+
+**NEW!** Connect to real Kugou listening history via [KuGouMusicApi](https://github.com/zkhssb/KuGouMusicApi).
+
+See complete guide: **[KUGOU_API_INTEGRATION.md](KUGOU_API_INTEGRATION.md)**
+
+**Quick steps:**
+
+1. **Deploy KuGouMusicApi:**
+   ```bash
+   git clone https://github.com/zkhssb/KuGouMusicApi.git
+   cd KuGouMusicApi
+   vercel --prod
+   # Save your API URL: https://your-kugou-api.vercel.app
+   ```
+
+2. **Login to Kugou:**
+   ```bash
+   curl "https://your-kugou-api.vercel.app/login/code?username=YOUR_PHONE"
+   curl "https://your-kugou-api.vercel.app/login/verify?username=YOUR_PHONE&code=123456"
+   # Save: userid and token
+   ```
+
+3. **Connect to widget:**
+   ```bash
+   curl -X POST https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app/setup-kugou \
+     -H "Content-Type: application/json" \
+     -d '{
+       "user_id": "your_github_username",
+       "api_url": "https://your-kugou-api.vercel.app",
+       "userid": "123456789",
+       "token": "abc123..."
+     }'
+   ```
+
+4. **Add to GitHub README:**
+   ```markdown
+   ![Kugou Music](https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=your_github_username&theme=dark)
+   ```
+
+**Result:** Widget now shows your real-time Kugou listening history! 🎵
+
+**How it works:**
+```
+Your Kugou Account 
+    ↓ (plays music)
+KuGouMusicApi (Node.js on Vercel)
+    ↓ (fetches history)
+Python Widget (this repo)
+    ↓ (generates SVG)
+GitHub Profile README
+```
+
+For detailed instructions, troubleshooting, and automatic sync setup, see **[KUGOU_API_INTEGRATION.md](KUGOU_API_INTEGRATION.md)**.
+
+### Option D: Add Manual Updates (10 minutes)
 
 1. **Complete Option A or B first**
 
@@ -159,7 +242,7 @@ Extract credentials from Kugou app for automatic fetching:
 
 **Result:** Widget shows your manually updated current song.
 
-### Option D: Full API Integration (2-4 hours)
+### Option E: Full API Integration (2-4 hours)
 
 ⚠️ **Advanced users only** - requires reverse engineering
 
@@ -220,6 +303,7 @@ https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=
 - `GET /test` - Test widget with sample data
 - `GET /login` - Setup instructions and options
 - `POST /update` - Manually update current song (requires Firebase)
+- `POST /setup-kugou` - **NEW!** Configure KuGouMusicApi credentials for real-time sync
 
 ### Endpoint Details
 
@@ -227,6 +311,19 @@ https://kugou-widget-n7ck3dfve-cv4tkg1uav-gmailcoms-projects.vercel.app?user_id=
 ```
 GET /?user_id=demo&theme=dark&width=400&height=120&show_album=true
 ```
+
+**KuGou API Setup: `POST /setup-kugou`** (NEW!)
+```bash
+curl -X POST /setup-kugou \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "your_github_username",
+    "api_url": "https://your-kugou-api.vercel.app",
+    "userid": "123456789",
+    "token": "abc123..."
+  }'
+```
+See [KUGOU_API_INTEGRATION.md](KUGOU_API_INTEGRATION.md) for complete setup guide.
 
 **Manual Update: `POST /update`**
 ```bash

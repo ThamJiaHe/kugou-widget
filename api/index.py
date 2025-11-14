@@ -79,9 +79,90 @@ else:
     print("Firebase not available or credentials not set - using demo mode only")
 
 
+def get_song_from_kugou_api(user_id):
+    """
+    Fetch currently playing song from Node.js KuGouMusicApi
+    This provides real-time sync with actual Kugou listening history
+    """
+    try:
+        if not firebase_initialized:
+            return None
+            
+        # Get user's Kugou credentials from Firebase
+        ref = db.reference(f'users/{user_id}/kugou_credentials')
+        creds = ref.get()
+        
+        if not creds:
+            print(f"No Kugou API credentials found for {user_id}")
+            return None
+        
+        kugou_api_url = creds.get('api_url')
+        userid = creds.get('userid')
+        token = creds.get('token')
+        
+        if not kugou_api_url or not userid or not token:
+            print("Incomplete Kugou API credentials")
+            return None
+        
+        # Call Node.js KuGouMusicApi for listening history
+        print(f"Fetching from KuGouMusicApi: {kugou_api_url}")
+        
+        import requests
+        response = requests.get(
+            f"{kugou_api_url}/user/recentListening",
+            params={
+                'userid': userid,
+                'token': token,
+                'limit': 1
+            },
+            timeout=10
+        )
+        
+        data = response.json()
+        print(f"KuGouMusicApi response status: {data.get('status')}")
+        
+        # Check if we got song data
+        if data.get('status') == 1 and data.get('data') and len(data['data']) > 0:
+            song = data['data'][0]
+            
+            result = {
+                'name': song.get('songname', 'Unknown'),
+                'artist': song.get('singername', 'Unknown'),
+                'cover': song.get('img', ''),
+                'hash': song.get('hash'),
+                'source': 'kugou_api_realtime'
+            }
+            
+            print(f"✅ Got real-time song from Kugou: {result['name']} - {result['artist']}")
+            
+            # Update Firebase cache with latest song
+            try:
+                song_ref = db.reference(f'users/{user_id}/current_song')
+                song_ref.set({
+                    'name': result['name'],
+                    'artist': result['artist'],
+                    'cover': result['cover'],
+                    'updated_at': int(time.time()),
+                    'source': 'kugou_api'
+                })
+                print(f"Updated Firebase cache for {user_id}")
+            except Exception as cache_error:
+                print(f"Cache update failed: {cache_error}")
+            
+            return result
+        else:
+            print(f"No songs in KuGouMusicApi response")
+            return None
+    
+    except Exception as e:
+        print(f"Error fetching from KuGouMusicApi: {e}")
+        print(traceback.format_exc())
+        return None
+
+
 @app.route('/')
 def now_playing():
-    """Main endpoint that returns SVG widget"""
+    """Main endpoint that returns SVG widget - now with KuGouMusicApi integration!"""
     try:
         # Get query parameters
         user_id = request.args.get('user_id')
@@ -92,30 +173,38 @@ def now_playing():
         
         song_data = None
         
-        # Try to get user's current song from Firebase first
-        if firebase_initialized and user_id:
+        # PRIORITY 1: Try KuGouMusicApi for real-time data (non-demo users only)
+        if user_id and user_id != 'demo':
+            song_data = get_song_from_kugou_api(user_id)
+            if song_data:
+                print(f"✅ Using real-time KuGouMusicApi data")
+        
+        # PRIORITY 2: Try to get cached song from Firebase
+        if not song_data and firebase_initialized and user_id:
             try:
                 ref = db.reference(f'users/{user_id}/current_song')
                 song_data = ref.get()
                 if song_data:
-                    print(f"Retrieved current song for user {user_id}")
+                    print(f"Using cached Firebase data for {user_id}")
             except Exception as e:
                 print(f"Firebase lookup failed: {e}")
         
-        # If no Firebase data, try demo mode or specific user handling
+        # PRIORITY 3: Demo mode or fallback
         if not song_data:
             if user_id == 'demo' or not user_id:
                 # Demo mode - cycle through demo songs
                 global current_song_index
                 song_data = DEMO_SONGS[current_song_index % len(DEMO_SONGS)]
                 current_song_index = (current_song_index + 1) % len(DEMO_SONGS)
+                print("Using demo song data")
             else:
-                # Try to get from real Kugou API (if credentials exist)
+                # Try old KugouClient method (fallback)
                 if firebase_initialized:
                     try:
                         ref = db.reference(f'users/{user_id}')
                         user_data = ref.get()
                         if user_data and user_data.get('userid') and user_data.get('token'):
+                            print("Trying legacy KugouClient...")
                             client = KugouClient(
                                 userid=user_data.get('userid'),
                                 token=user_data.get('token'),
@@ -125,11 +214,12 @@ def now_playing():
                             )
                             song_data = client.get_user_listening_history()
                     except Exception as e:
-                        print(f"Kugou API call failed: {e}")
+                        print(f"Legacy Kugou API call failed: {e}")
                 
                 # Final fallback to demo
                 if not song_data:
-                    song_data = DEMO_SONGS[0]  # Default demo song
+                    song_data = DEMO_SONGS[0]
+                    print("Using fallback demo song")
         
         # Generate SVG with song data
         if song_data:
@@ -212,6 +302,62 @@ def update_now_playing():
         
     except Exception as e:
         print(f"Error in update: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/setup-kugou', methods=['POST'])
+def setup_kugou():
+    """
+    Setup Kugou API credentials for real-time sync
+    POST body:
+    {
+        "user_id": "your_github_username",
+        "api_url": "https://your-kugou-api.vercel.app",
+        "userid": "123456",
+        "token": "abc123..."
+    }
+    """
+    try:
+        if not firebase_initialized:
+            return jsonify({"error": "Firebase not configured"}), 500
+        
+        data = request.get_json()
+        user_id = data.get('user_id')
+        api_url = data.get('api_url')
+        userid = data.get('userid')
+        token = data.get('token')
+        
+        if not all([user_id, api_url, userid, token]):
+            return jsonify({
+                "error": "Missing required fields",
+                "required": ["user_id", "api_url", "userid", "token"]
+            }), 400
+        
+        # Save credentials to Firebase
+        creds = {
+            'api_url': api_url,
+            'userid': userid,
+            'token': token,
+            'setup_at': int(time.time())
+        }
+        
+        ref = db.reference(f'users/{user_id}/kugou_credentials')
+        ref.set(creds)
+        
+        return jsonify({
+            "success": True,
+            "message": "Kugou API credentials saved successfully!",
+            "user_id": user_id,
+            "widget_url": f"{request.host_url}?user_id={user_id}&theme=dark",
+            "next_steps": [
+                "Your widget will now show real-time listening history from Kugou",
+                "Add to your GitHub README to see it in action",
+                "Songs update automatically when you play on Kugou"
+            ]
+        })
+        
+    except Exception as e:
+        print(f"Error in setup_kugou: {e}")
         return jsonify({"error": str(e)}), 500
 
 
